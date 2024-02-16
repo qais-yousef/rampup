@@ -7,6 +7,7 @@ int main(int argc, char *argv)
 	int sleeptime = 1;
 	int sleepfor = 10000; // 10ms
 	int totalsleep = sleeptime * 1000000;
+	FILE *fd;
 
 	fprintf(stdout, "sleeping for %d seconds\n", sleeptime);
 
@@ -18,6 +19,12 @@ int main(int argc, char *argv)
 	}
 
 	fprintf(stdout, "looping\n") ;
+
+	fd = fopen("/sys/kernel/tracing/trace_marker", "w");
+	if (fd) {
+		fwrite("rampup start\n", sizeof("rampup start\n"), 1, fd);
+		fclose(fd);
+	}
 
 	i = 0;
 	while(++i);
