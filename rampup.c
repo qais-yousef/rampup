@@ -31,7 +31,7 @@ int main(int argc, char *argv)
 	i = 0;
 	while(++i);
 
-	fprintf(stdout, "done\n", i);
+	fprintf(stdout, "done\n");
 
 	return 0;
 }
