@@ -1,2 +1,4 @@
+CC=gcc
+
 all:
-	aarch64-linux-gnu-gcc rampup.c -o rampup -static
+	$(CROSS_COMPILE)$(CC) rampup.c -o rampup -static
