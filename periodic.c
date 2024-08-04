@@ -8,8 +8,8 @@
 
 static volatile int counter;
 
-static int run_time_us = 10000; /* 10ms */
-static int sleep_time_us = 6000; /* 6ms */
+static int period_us = 16000; /* 16ms */
+static int loops = 1000000; /* 1000k */
 static int total_dur_us = 5 * 1000 * 1000; /* 5s */
 
 /* handle arguments */
@@ -17,18 +17,18 @@ const char *argp_program_version = "periodic v0.1";
 const char *argp_program_bug_address = "<qyousef@layalina.io>";
 
 static char doc[] =
-"Start a periodic task that runs and sleeps for a specified ms period.";
+"Start a periodic task that runs and loops for Xk times every Yms period.";
 
 enum pi_test_opts_flags {
 	OPT_DUMMY_START = 0x80,
 
-	OPT_RUN,
-	OPT_SLEEP,
+	OPT_PERIOD,
+	OPT_LOOPS,
 };
 
 static const struct argp_option options[] = {
-	{ "run", OPT_RUN, "TIME_MS", 0, "Duration of RUNNING time in ms. Default 10ms." },
-	{ "sleep", OPT_SLEEP, "TIME_MS", 0, "Duration of SLEEP time in ms. Default 6ms." },
+	{ "period", OPT_PERIOD, "TIME_MS", 0, "Period in ms. Default 16ms." },
+	{ "loops", OPT_LOOPS, "INT", 0, "Number of loops to execute every wakeup in 'k' units. Default 1000k." },
 	{ 0 },
 };
 
@@ -37,28 +37,28 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 	char *end_ptr;
 
 	switch (key) {
-	case OPT_RUN:
+	case OPT_PERIOD:
 		errno = 0;
-		run_time_us = strtol(arg, &end_ptr, 0) * 1000;
+		period_us = strtol(arg, &end_ptr, 0) * 1000;
 		if (errno != 0) {
-			perror("Unsupported run value\n");
+			perror("Unsupported period value\n");
 			return errno;
 		}
 		if (end_ptr == arg) {
-			fprintf(stderr, "run: no digits were found\n");
+			fprintf(stderr, "period: no digits were found\n");
 			argp_usage(state);
 			return -EINVAL;
 		}
 		break;
-	case OPT_SLEEP:
+	case OPT_LOOPS:
 		errno = 0;
-		sleep_time_us = strtol(arg, &end_ptr, 0) * 1000;
+		loops = strtol(arg, &end_ptr, 0) * 1000;
 		if (errno != 0) {
-			perror("Unsupported sleep value\n");
+			perror("Unsupported loops value\n");
 			return errno;
 		}
 		if (end_ptr == arg) {
-			fprintf(stderr, "sleep: no digits were found\n");
+			fprintf(stderr, "loops: no digits were found\n");
 			argp_usage(state);
 			return -EINVAL;
 		}
@@ -81,24 +81,26 @@ const struct argp argp = {
 	.doc = doc,
 };
 
-double get_time_us(void)
+int get_time_us(void)
 {
 	return clock() * 1000000/ CLOCKS_PER_SEC;
 }
 
 void periodic_loop(void)
 {
-	double ts_start, ts_diff, ts_total = 0;
+	int ts_start, ts_diff, ts_total = 0;
 
 	while (1) {
+		counter = loops;
 		ts_diff = 0;
 		ts_start = get_time_us();
-		while (ts_diff < run_time_us) {
-			counter++;
-			ts_diff = get_time_us() - ts_start;
-		}
-		ts_total += ts_diff;
-		usleep(sleep_time_us);
+		while (counter--);
+		ts_diff = get_time_us() - ts_start;
+		if (ts_diff < period_us)
+			usleep(period_us - ts_diff);
+		else
+			fprintf(stderr, "loops is too high, no sleep time\n");
+		ts_total += period_us;
 		if (ts_total > total_dur_us)
 			break;
 	}
