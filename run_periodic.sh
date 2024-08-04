@@ -17,7 +17,9 @@ fi
 sa_pp=$(which sched-analyzer-pp)
 if [ -n $sa_pp ]; then
 	$sa_pp --sched-states periodic --freq --freq-residency \
+		--freq-task periodic --freq-residency-abs-task periodic \
 		--util-avg-running periodic --util-avg-running-residency-abs periodic \
 		--util-avg CPU \
+		--util-est-running periodic --util-est-running-residency-abs periodic \
 		sched-analyzer.perfetto-trace
 fi

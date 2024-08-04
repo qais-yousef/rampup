@@ -19,7 +19,9 @@ fi
 sa_pp=$(which sched-analyzer-pp)
 if [ -n $sa_pp ]; then
 	$sa_pp --sched-states rampup --freq --freq-residency \
+		--freq-task rampup --freq-residency-abs-task rampup \
 		--util-avg-running rampup --util-avg-running-residency-abs rampup \
 		--util-avg CPU \
+		--util-est-running rampup --util-est-running-residency-abs rampup \
 		sched-analyzer.perfetto-trace
 fi
