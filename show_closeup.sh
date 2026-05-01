@@ -10,6 +10,7 @@ inspect() {
 		--util-est-running-residency-abs $task --util-avg-running-residency-abs $task \
 		--sched-states $task \
 		--fig-height-tui 20 --ts-start $start --ts-end $end \
+		--grid-tui \
 		sched-analyzer.perfetto-trace
 }
 
